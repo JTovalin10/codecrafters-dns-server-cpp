@@ -1,0 +1,95 @@
+#pragma once
+
+#include <cstdint>
+
+/**
+ * each are 16 bits for a total of 12 bytes
+ * pid = A random ID assigned to query packets. Response packets must reply with
+ * the same PID
+ * flags {
+ * bits, name, description
+ * 1, QR, 1 for a reply packet, 0 for a question packet
+ *
+ * 4, OPCODE, specifies the kind of query in a Message
+ *
+ * 1, AA, 1 if the responding server "owns" the domain queried
+ *
+ * 1, TC, 1 if the message is larger than 512 bytes (should default to 0 in UDP
+ * responses)
+ *
+ * 1, RD, Sender sets this to 1 if the server should recursively resolve this
+ * query otherwise iterative (0)
+ *
+ * 1, RA, server sets this to 1 to indicate that recursion is available
+ *
+ * 3, Z, used by DNSSEC queries. At inception, it was reserved for future use
+ *
+ * 4, RCODE, Response code indicating the status of the response
+ * }
+ * QDCOUNT: number of questions in the question section
+ * ANCOUNT: number of records in the answer section
+ * NSCOUNT: number of records in the authority section
+ * ARCOUNT: the number of records in the Additional section
+ */
+
+namespace Slime {
+
+struct Header {
+  uint16_t pid;
+  uint16_t flags;
+  uint16_t QDCOUNT;
+  uint16_t ANCOUNT;
+  uint16_t NSCOUNT;
+  uint16_t ARCOUNT;
+};
+
+struct Message {
+  Header header;
+  /**
+  Question question;
+  Answer answer;
+  Authority auth;
+  Additional additional;
+  */
+};
+
+class flags_bg {
+ public:
+  explicit flags_bg(const struct Header& header);
+
+  uint8_t get_qr();
+  uint8_t get_opcode();
+  uint8_t get_aa();
+  uint8_t get_tc();
+  uint8_t get_rd();
+  uint8_t get_ra();
+  uint8_t get_z();
+  uint8_t get_rcode();
+
+  void set_qr(uint16_t value);
+
+  void set_opcode(uint16_t value);
+
+  void set_aa(uint16_t value);
+
+  void set_tc(uint16_t value);
+
+  void set_rd(uint16_t value);
+
+  void set_ra(uint16_t value);
+
+  void set_z(uint16_t value);
+
+  void set_rcode(uint16_t value);
+
+  void reset(const struct Header& header);
+  // returns the flags so the user can use them (meant if they modify it)
+  uint16_t release() const;
+
+ private:
+  uint16_t flags;
+  uint16_t get_flags_bit(const uint16_t index);
+  void set_value(uint16_t value, const uint16_t index);
+};
+
+};  // namespace Slime
