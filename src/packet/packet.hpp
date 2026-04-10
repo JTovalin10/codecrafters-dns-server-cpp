@@ -94,14 +94,14 @@ class flags_bg {
  public:
   explicit flags_bg(const struct Header& header);
 
-  uint8_t get_qr();
-  uint8_t get_opcode();
-  uint8_t get_aa();
-  uint8_t get_tc();
-  uint8_t get_rd();
-  uint8_t get_ra();
-  uint8_t get_z();
-  uint8_t get_rcode();
+  uint8_t get_qr() const;
+  uint8_t get_opcode() const;
+  uint8_t get_aa() const;
+  uint8_t get_tc() const;
+  uint8_t get_rd() const;
+  uint8_t get_ra() const;
+  uint8_t get_z() const;
+  uint8_t get_rcode() const;
 
   void set_qr(uint16_t value);
 
@@ -125,7 +125,7 @@ class flags_bg {
 
  private:
   uint16_t flags;
-  uint16_t get_flags_bit(const uint16_t index);
+  uint16_t get_flags_bit(const uint16_t index) const;
   void set_value(uint16_t value, const uint16_t index);
 };
 

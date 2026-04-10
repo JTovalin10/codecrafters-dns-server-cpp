@@ -21,29 +21,39 @@ const uint16_t FOUR_BIT_MAX = 15;
 
 flags_bg::flags_bg(const struct Header& header) : flags(header.flags) {}
 
-uint8_t flags_bg::get_qr() { return get_flags_bit(PACKET_TOOLS::QR_INDEX); }
+uint8_t flags_bg::get_qr() const {
+  return get_flags_bit(PACKET_TOOLS::QR_INDEX);
+}
 
-uint8_t flags_bg::get_opcode() {
+uint8_t flags_bg::get_opcode() const {
   return (flags >> PACKET_TOOLS::OPCODE_INDEX) & PACKET_TOOLS::FOUR_MASK;
 }
 
-uint8_t flags_bg::get_aa() { return get_flags_bit(PACKET_TOOLS::AA_INDEX); }
+uint8_t flags_bg::get_aa() const {
+  return get_flags_bit(PACKET_TOOLS::AA_INDEX);
+}
 
-uint8_t flags_bg::get_tc() { return get_flags_bit(PACKET_TOOLS::TC_INDEX); }
+uint8_t flags_bg::get_tc() const {
+  return get_flags_bit(PACKET_TOOLS::TC_INDEX);
+}
 
-uint8_t flags_bg::get_rd() { return get_flags_bit(PACKET_TOOLS::RD_INDEX); }
+uint8_t flags_bg::get_rd() const {
+  return get_flags_bit(PACKET_TOOLS::RD_INDEX);
+}
 
-uint8_t flags_bg::get_ra() { return get_flags_bit(PACKET_TOOLS::RA_INDEX); }
+uint8_t flags_bg::get_ra() const {
+  return get_flags_bit(PACKET_TOOLS::RA_INDEX);
+}
 
-uint8_t flags_bg::get_z() {
+uint8_t flags_bg::get_z() const {
   return (flags >> PACKET_TOOLS::Z_INDEX) & PACKET_TOOLS::THREE_MASK;
 }
 
-uint8_t flags_bg::get_rcode() {
+uint8_t flags_bg::get_rcode() const {
   return (flags >> PACKET_TOOLS::RCODE_INDEX) & PACKET_TOOLS::FOUR_MASK;
 }
 
-uint16_t flags_bg::get_flags_bit(const uint16_t index) {
+uint16_t flags_bg::get_flags_bit(const uint16_t index) const {
   return (flags >> index) & 1;
 }
 
@@ -120,8 +130,9 @@ const uint16_t MASK = 0x7800;
 void flags_bg::set_opcode(uint16_t value) {
   if (value != SET_OPCODE_TOOLS::QUERY && value != SET_OPCODE_TOOLS::IQUERY &&
       value != SET_OPCODE_TOOLS::STATUS && value != SET_OPCODE_TOOLS::NOTIFY &&
-      value != SET_OPCODE_TOOLS::UPDATE && value != SET_OPCODE_TOOLS::DSO)
+      value != SET_OPCODE_TOOLS::UPDATE && value != SET_OPCODE_TOOLS::DSO) {
     return;
+  }
   flags =
       (flags & ~SET_OPCODE_TOOLS::MASK) | (value << PACKET_TOOLS::OPCODE_INDEX);
 }
