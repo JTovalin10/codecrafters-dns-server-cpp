@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 /**
@@ -91,6 +92,13 @@ enum class RCODE : uint8_t {
   NOT_ZONE = 10,
   DSO_TYPE_NI = 11,
 };
+
+// sets the packet id, DO NOT CALL HTONS on value
+void set_pid(Header& header, uint16_t value);
+uint16_t get_pid(const Header& header);
+
+// size in bytes of the header section on the wire (always 12)
+std::size_t get_header_size(const Header& header);
 
 // count fields are stored in network byte order, re-applies ntohs for you
 uint16_t get_qdcount(const Header& header);

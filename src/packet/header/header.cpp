@@ -22,6 +22,11 @@ const uint16_t FOUR_BIT_MAX = 15;
 const uint16_t OPCODE_MASK = 0x7800;
 }  // namespace
 
+void set_pid(Header& header, uint16_t value) { header.pid = htons(value); }
+uint16_t get_pid(const Header& header) { return ntohs(header.pid); }
+
+std::size_t get_header_size(const Header& header) { return sizeof(header); }
+
 uint16_t get_qdcount(const Header& header) { return ntohs(header.QDCOUNT); }
 uint16_t get_ancount(const Header& header) { return ntohs(header.ANCOUNT); }
 uint16_t get_nscount(const Header& header) { return ntohs(header.NSCOUNT); }

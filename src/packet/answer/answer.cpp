@@ -59,4 +59,9 @@ void set_ans_data(Slime::Answer& ans) { ans.data = DATA_DEFAULT; }
 void set_ans_data(Slime::Answer& ans, const std::vector<uint8_t>& addr) {
   ans.data = addr;
 }
+
+size_t get_ans_size(const Slime::Answer& ans) {
+  return ans.name.size() + sizeof(ans.type) + sizeof(ans._class) +
+         sizeof(ans.TTL) + sizeof(ans.RDLENGTH) + ans.data.size();
+}
 }  // namespace Slime

@@ -94,4 +94,8 @@ void set_rdlength(Slime::Answer& ans);
 
 void set_ans_data(Slime::Answer& ans);
 void set_ans_data(Slime::Answer& ans, const std::vector<uint8_t>& addr);
+
+// size in bytes of the answer section on the wire:
+// name + type(2) + class(2) + TTL(4) + RDLENGTH(2) + data
+size_t get_ans_size(const Slime::Answer& ans);
 }  // namespace Slime

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 /**
@@ -41,5 +42,9 @@ struct Question {
   uint16_t type;
   uint16_t _class;
 };
+
+// size in bytes of the question section on the wire:
+// name (length-prefixed labels + terminating 0) + type + class
+size_t get_ques_size(const Question& ques);
 
 };  // namespace Slime
