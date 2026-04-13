@@ -4,8 +4,6 @@
 
 #include <stdexcept>
 
-#include "flags.hpp"
-
 namespace Slime {
 
 namespace {
@@ -86,36 +84,24 @@ uint8_t get_rcode(const Header& header) {
   return (header.flags >> RCODE_INDEX) & FOUR_MASK;
 }
 
-void set_qr(Header& header, uint16_t value) {
-  if (value != 0 && value != 1) {
-    throw std::out_of_range("set_qr: value must be 0 or 1");
-  }
-  set_flags_bit(header, value, QR_INDEX);
+void set_qr(Header& header, QR value) {
+  set_flags_bit(header, static_cast<uint16_t>(value), QR_INDEX);
 }
 
 void set_aa(Header& header, AA value) {
   set_flags_bit(header, static_cast<uint16_t>(value), AA_INDEX);
 }
 
-void set_tc(Header& header, uint16_t value) {
-  if (value != 0 && value != 1) {
-    throw std::out_of_range("set_tc: value must be 0 or 1");
-  }
-  set_flags_bit(header, value, TC_INDEX);
+void set_tc(Header& header, TC value) {
+  set_flags_bit(header, static_cast<uint16_t>(value), TC_INDEX);
 }
 
-void set_rd(Header& header, uint16_t value) {
-  if (value != 0 && value != 1) {
-    throw std::out_of_range("set_rd: value must be 0 or 1");
-  }
-  set_flags_bit(header, value, RD_INDEX);
+void set_rd(Header& header, RD value) {
+  set_flags_bit(header, static_cast<uint16_t>(value), RD_INDEX);
 }
 
-void set_ra(Header& header, uint16_t value) {
-  if (value != 0 && value != 1) {
-    throw std::out_of_range("set_ra: value must be 0 or 1");
-  }
-  set_flags_bit(header, value, RA_INDEX);
+void set_ra(Header& header, RA value) {
+  set_flags_bit(header, static_cast<uint16_t>(value), RA_INDEX);
 }
 
 void set_z(Header& header, uint16_t value) {
@@ -127,13 +113,9 @@ void set_z(Header& header, uint16_t value) {
       (value << Z_INDEX);
 }
 
-void set_rcode(Header& header, uint16_t value) {
-  if (value > FOUR_BIT_MAX) {
-    throw std::out_of_range("set_rcode: value must be 0-15 (4 bits)");
-  }
-  header.flags =
-      (header.flags & ~(FOUR_MASK << RCODE_INDEX)) |
-      (value << RCODE_INDEX);
+void set_rcode(Header& header, RCODE value) {
+  header.flags = (header.flags & ~(FOUR_MASK << RCODE_INDEX)) |
+                 (static_cast<uint16_t>(value) << RCODE_INDEX);
 }
 
 void set_opcode(Header& header, OPCODE value) {

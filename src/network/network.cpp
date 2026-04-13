@@ -40,13 +40,13 @@ int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
   return EXIT_SUCCESS;
 }
 
-namespace TOOLS {
+namespace {
 void complete_header(std::array<char, BUFFER_SIZE>& response) {
   Header header{};
   std::memcpy(&header, response.data(), sizeof(Header));
   header.flags = ntohs(header.flags);
-
-  set_qr(header, 1);
+  set_qr(header, QR::RESPONSE);
+  increment_ancount(header);
 
   header.flags = htons(header.flags);
 
@@ -63,7 +63,7 @@ void complete_answer(std::array<char, BUFFER_SIZE>& response) {
   Slime::set_ans_data(ans);
   // we need to update the ANCOUNT field accoridngly
 }
-};  // namespace TOOLS
+};  // namespace
 
 void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
   ssize_t bytesRead;
@@ -83,10 +83,10 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
     std::array<char, BUFFER_SIZE> response{};
     std::memcpy(&response, buffer.data(), BUFFER_SIZE);
     // stage 2
-    TOOLS::complete_header(response);
+    complete_header(response);
     // stage 3 is recieving the packet and then just returning the same data
     // stage 4
-    TOOLS::complete_answer(response);
+    complete_answer(response);
 
     // Send response
     if (sendto(udpSocket, response.data(), response.size(), 0,

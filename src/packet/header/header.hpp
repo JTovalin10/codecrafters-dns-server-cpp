@@ -43,6 +43,55 @@ struct Header {
   uint16_t ARCOUNT;
 };
 
+enum class QR : uint8_t {
+  QUERY = 0,
+  RESPONSE = 1,
+};
+
+enum class AA : uint8_t {
+  NOT_AUTHORITATIVE = 0,
+  AUTHORITATIVE = 1,
+};
+
+enum class TC : uint8_t {
+  NOT_TRUNCATED = 0,
+  TRUNCATED = 1,
+};
+
+enum class RD : uint8_t {
+  NOT_DESIRED = 0,
+  DESIRED = 1,
+};
+
+enum class RA : uint8_t {
+  NOT_AVAILABLE = 0,
+  AVAILABLE = 1,
+};
+
+enum class OPCODE : uint8_t {
+  QUERY = 0,
+  IQUERY = 1,
+  STATUS = 2,
+  NOTIFY = 4,
+  UPDATE = 5,
+  DSO = 6,
+};
+
+enum class RCODE : uint8_t {
+  NO_ERROR = 0,
+  FORMAT_ERROR = 1,
+  SERVER_FAILURE = 2,
+  NAME_ERROR = 3,
+  NOT_IMPLEMENTED = 4,
+  REFUSED = 5,
+  YX_DOMAIN = 6,
+  YX_RR_SET = 7,
+  NX_RR_SET = 8,
+  NOT_AUTH = 9,
+  NOT_ZONE = 10,
+  DSO_TYPE_NI = 11,
+};
+
 // count fields are stored in network byte order, re-applies ntohs for you
 uint16_t get_qdcount(const Header& header);
 uint16_t get_ancount(const Header& header);
@@ -54,5 +103,26 @@ void increment_qdcount(Header& header);
 void increment_ancount(Header& header);
 void increment_nscount(Header& header);
 void increment_arcount(Header& header);
+
+uint16_t get_flags_bit(const Header& header, uint16_t index);
+void set_flags_bit(Header& header, uint16_t value, uint16_t index);
+
+uint8_t get_qr(const Header& header);
+uint8_t get_opcode(const Header& header);
+uint8_t get_aa(const Header& header);
+uint8_t get_tc(const Header& header);
+uint8_t get_rd(const Header& header);
+uint8_t get_ra(const Header& header);
+uint8_t get_z(const Header& header);
+uint8_t get_rcode(const Header& header);
+
+void set_qr(Header& header, QR value);
+void set_aa(Header& header, AA value);
+void set_tc(Header& header, TC value);
+void set_rd(Header& header, RD value);
+void set_ra(Header& header, RA value);
+void set_z(Header& header, uint16_t value);
+void set_rcode(Header& header, RCODE value);
+void set_opcode(Header& header, OPCODE value);
 
 };  // namespace Slime
