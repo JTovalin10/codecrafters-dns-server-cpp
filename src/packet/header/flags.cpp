@@ -1,4 +1,4 @@
-#include "packet.hpp"
+#include "flags.hpp"
 
 #include <stdexcept>
 
