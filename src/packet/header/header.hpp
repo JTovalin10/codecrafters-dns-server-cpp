@@ -43,4 +43,16 @@ struct Header {
   uint16_t ARCOUNT;
 };
 
+// count fields are stored in network byte order, re-applies ntohs for you
+uint16_t get_qdcount(const Header& header);
+uint16_t get_ancount(const Header& header);
+uint16_t get_nscount(const Header& header);
+uint16_t get_arcount(const Header& header);
+
+// increments the count by 1, DO NOT CALL HTONS, handled internally
+void increment_qdcount(Header& header);
+void increment_ancount(Header& header);
+void increment_nscount(Header& header);
+void increment_arcount(Header& header);
+
 };  // namespace Slime
