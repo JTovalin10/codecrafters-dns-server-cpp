@@ -1,6 +1,13 @@
 #pragma once
 
-#include "header/header.hpp"
+#include "answer/answer.hpp"
 #include "header/flags.hpp"
-#include "question/question.hpp"
+#include "header/header.hpp"
 #include "message/message.hpp"
+#include "question/question.hpp"
+
+struct packet {
+  Slime::Header h;
+  Slime::Question q;
+  Slime::Answer m;
+};
