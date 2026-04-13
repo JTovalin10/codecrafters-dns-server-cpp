@@ -40,6 +40,31 @@ int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
   return EXIT_SUCCESS;
 }
 
+namespace TOOLS {
+void complete_header(std::array<char, BUFFER_SIZE>& response) {
+  Header header{};
+  std::memcpy(&header, response.data(), sizeof(Header));
+  header.flags = ntohs(header.flags);
+
+  set_qr(header, 1);
+
+  header.flags = htons(header.flags);
+
+  std::memcpy(response.data(), &header, sizeof(Header));
+}
+
+void complete_answer(std::array<char, BUFFER_SIZE>& response) {
+  const std::string name = "codecrafters.io";
+  Slime::Answer ans{};
+  Slime::set_name(ans, name);
+  Slime::set_type(ans, Slime::records::A);
+  Slime::set_class(ans, Slime::classes::IN);
+  Slime::set_ttl(ans);
+  Slime::set_ans_data(ans);
+  // we need to update the ANCOUNT field accoridngly
+}
+};  // namespace TOOLS
+
 void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
   ssize_t bytesRead;
   std::array<char, BUFFER_SIZE> buffer{};
@@ -54,26 +79,14 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
       perror("Error receiving data");
       break;
     }
-    if (bytesRead < 12) {
-      std::cerr << "Packet too small\n";
-    }
+
     std::array<char, BUFFER_SIZE> response{};
     std::memcpy(&response, buffer.data(), BUFFER_SIZE);
-
-    Header header{};
-    std::memcpy(&header, response.data(), sizeof(Header));
-    header.flags = ntohs(header.flags);
-
-    flags_bg fb(header);
-    fb.set_qr(1);
-
-    header.flags = htons(fb.release());
-    std::memcpy(response.data(), &header, sizeof(Header));
-    /**
-    buffer[bytesRead] = '\0';
-    std::cout << "Received " << bytesRead << " bytes: " << buffer.data()
-              << '\n';
-    */
+    // stage 2
+    TOOLS::complete_header(response);
+    // stage 3 is recieving the packet and then just returning the same data
+    // stage 4
+    TOOLS::complete_answer(response);
 
     // Send response
     if (sendto(udpSocket, response.data(), response.size(), 0,
