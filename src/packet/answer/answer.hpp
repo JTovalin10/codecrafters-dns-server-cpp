@@ -4,33 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "../utils/shared_enums.hpp"
+
 namespace Slime {
-
-enum class records : uint16_t {
-  A = 1,
-  NS = 2,
-  MD = 3,
-  MF = 4,
-  CNAME = 5,
-  SOA = 6,
-  MB = 7,
-  MG = 8,
-  MR = 9,
-  NULL_ = 10,
-  WKS = 11,
-  PTR = 12,
-  HINFO = 13,
-  MINFO = 14,
-  MX = 15,
-  TXT = 16,
-};
-
-enum class classes : uint16_t {
-  IN = 1,
-  CS = 2,
-  CH = 3,
-  HS = 4,
-};
 
 /**
   *A               1 a host address
@@ -77,10 +53,10 @@ struct Answer {
 // sets the name, it will parse the string for the . and write it in network
 // notion. also calls set_rdlength for you
 // name: the regular string ex: codecrafters.io
-void set_name(Slime::Answer& ans, const std::string& name);
+void set_ans_name(Slime::Answer& ans, const std::string& name);
 
 // sets the type, DO NOT CALL HTONS ON VALUE
-void set_type(Slime::Answer& ans, Slime::records value);
+void set_ans_type(Slime::Answer& ans, Slime::records value);
 
 // sets the class, DO NOT CALL HTONS ON VALUE
 void set_class(Slime::Answer& ans, Slime::classes value);
@@ -92,8 +68,8 @@ void decrement_ttl(Slime::Answer& ans);
 
 void set_rdlength(Slime::Answer& ans);
 
-void set_ans_data(Slime::Answer& ans);
-void set_ans_data(Slime::Answer& ans, const std::vector<uint8_t>& addr);
+void set_data(Slime::Answer& ans);
+void set_data(Slime::Answer& ans, const std::vector<uint8_t>& addr);
 
 // size in bytes of the answer section on the wire:
 // name + type(2) + class(2) + TTL(4) + RDLENGTH(2) + data

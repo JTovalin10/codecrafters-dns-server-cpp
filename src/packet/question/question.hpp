@@ -2,6 +2,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
+#include <vector>
+
+#include "../utils/shared_enums.hpp"
 
 /**
  * name: domain name represented as a sequence of labels
@@ -38,7 +42,7 @@
 namespace Slime {
 
 struct Question {
-  char* name;
+  std::vector<uint8_t> name;
   uint16_t type;
   uint16_t _class;
 };
@@ -46,5 +50,18 @@ struct Question {
 // size in bytes of the question section on the wire:
 // name (length-prefixed labels + terminating 0) + type + class
 size_t get_ques_size(const Question& ques);
+
+// parses the string for '.' and writes it in network notation
+// name: the regular string ex: codecrafters.io
+void set_que_name(Question& que, const std::string& name);
+std::vector<uint8_t> get_que_name(const Question& que);
+
+// DO NOT CALL HTONS ON VALUE
+void set_que_type(Question& que, Slime::records value);
+Slime::records get_que_type(const Question& que);
+
+// DO NOT CALL HTONS ON VALUE
+void set_que_class(Question& que, Slime::classes value);
+Slime::classes get_que_class(const Question& que);
 
 };  // namespace Slime

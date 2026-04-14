@@ -41,27 +41,57 @@ int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
 }
 
 namespace {
-void complete_header(std::array<char, BUFFER_SIZE>& response) {
-  Header header{};
+
+const int PID = 1234;
+
+void complete_header(std::array<char, BUFFER_SIZE>& response, Header& header) {
   std::memcpy(&header, response.data(), sizeof(Header));
   header.flags = ntohs(header.flags);
+  set_pid(header, PID);
   set_qr(header, QR::RESPONSE);
   increment_ancount(header);
-
   header.flags = htons(header.flags);
 
   std::memcpy(response.data(), &header, sizeof(Header));
 }
 
-void complete_answer(std::array<char, BUFFER_SIZE>& response) {
-  const std::string name = "codecrafters.io";
-  Slime::Answer ans{};
-  Slime::set_name(ans, name);
-  Slime::set_type(ans, Slime::records::A);
+void complete_question(std::array<char, BUFFER_SIZE>& response, Question& que,
+                       int offset) {
+  set_que_name(que, "codecrafters.io");
+  set_que_class(que, Slime::classes::IN);
+  set_que_type(que, Slime::records::A);
+
+  char* cursor = response.data() + offset;
+  std::memcpy(cursor, que.name.data(), que.name.size());
+  cursor += que.name.size();
+  std::memcpy(cursor, &que.type, sizeof(que.type));
+  cursor += sizeof(que.type);
+  std::memcpy(cursor, &que._class, sizeof(que._class));
+}
+
+void complete_answer(std::array<char, BUFFER_SIZE>& response, Answer& ans,
+                     int offset) {
+  Slime::set_ans_name(ans, "codecrafters.io");
+  Slime::set_ans_type(ans, Slime::records::A);
   Slime::set_class(ans, Slime::classes::IN);
   Slime::set_ttl(ans);
-  Slime::set_ans_data(ans);
-  // we need to update the ANCOUNT field accoridngly
+  Slime::set_data(ans);
+
+  const uint32_t ttl_n = htonl(ans.TTL);
+  const uint16_t rdlen_n = htons(ans.RDLENGTH);
+
+  char* cursor = response.data() + offset;
+  std::memcpy(cursor, ans.name.data(), ans.name.size());
+  cursor += ans.name.size();
+  std::memcpy(cursor, &ans.type, sizeof(ans.type));
+  cursor += sizeof(ans.type);
+  std::memcpy(cursor, &ans._class, sizeof(ans._class));
+  cursor += sizeof(ans._class);
+  std::memcpy(cursor, &ttl_n, sizeof(ttl_n));
+  cursor += sizeof(ttl_n);
+  std::memcpy(cursor, &rdlen_n, sizeof(rdlen_n));
+  cursor += sizeof(rdlen_n);
+  std::memcpy(cursor, ans.data.data(), ans.data.size());
 }
 };  // namespace
 
@@ -83,10 +113,16 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
     std::array<char, BUFFER_SIZE> response{};
     std::memcpy(&response, buffer.data(), BUFFER_SIZE);
     // stage 2
-    complete_header(response);
+    Header header{};
+    complete_header(response, header);
     // stage 3 is recieving the packet and then just returning the same data
-    // stage 4
-    complete_answer(response);
+    Question ques{};
+    int que_offset = get_header_size(header);
+    complete_question(response, ques, que_offset);
+    // stage 4:
+    Answer ans{};
+    int ans_offset = que_offset + get_ques_size(ques);
+    complete_answer(response, ans, ans_offset);
 
     // Send response
     if (sendto(udpSocket, response.data(), response.size(), 0,

@@ -4,41 +4,21 @@
 
 #include <algorithm>
 
+#include "../utils/my_utils.hpp"
+
 namespace Slime {
 
 namespace {
 const uint32_t DEFAULT_TTL = 60;
 const std::vector<uint8_t> DATA_DEFAULT = {0x08, 0x08, 0x08, 0x08};
-
-std::vector<uint8_t> encode_name(const std::string& name) {
-  std::vector<uint8_t> res;
-  res.reserve(name.size() + 2);
-  // add a temp for the size variable
-  size_t len_pos = 0;
-  res.push_back(0);
-  for (char chr : name) {
-    if (chr == '.') {
-      res[len_pos] = res.size() - len_pos + 1;
-      len_pos = res.size();
-      res.push_back(0);
-    } else {
-      res.push_back(chr);
-    }
-  }
-  // fill in the last one
-  res[len_pos] = res.size() - len_pos + 1;
-  res.push_back('\0');
-  res.shrink_to_fit();
-  return res;
-}
 }  // namespace
 
-void set_name(Slime::Answer& ans, const std::string& name) {
-  ans.name = encode_name(name);
+void set_ans_name(Slime::Answer& ans, const std::string& name) {
+  ans.name = Slime::encode_name(name);
   set_rdlength(ans);
 }
 
-void set_type(Slime::Answer& ans, Slime::records value) {
+void set_ans_type(Slime::Answer& ans, Slime::records value) {
   ans.type = htons(static_cast<uint16_t>(value));
 }
 
@@ -55,9 +35,13 @@ void decrement_ttl(Slime::Answer& ans) {
 
 void set_rdlength(Slime::Answer& ans) { ans.RDLENGTH = ans.data.size(); }
 
-void set_ans_data(Slime::Answer& ans) { ans.data = DATA_DEFAULT; }
-void set_ans_data(Slime::Answer& ans, const std::vector<uint8_t>& addr) {
+void set_data(Slime::Answer& ans) {
+  ans.data = DATA_DEFAULT;
+  set_rdlength(ans);
+}
+void set_data(Slime::Answer& ans, const std::vector<uint8_t>& addr) {
   ans.data = addr;
+  set_rdlength(ans);
 }
 
 size_t get_ans_size(const Slime::Answer& ans) {
