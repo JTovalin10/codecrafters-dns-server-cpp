@@ -47,21 +47,47 @@ struct Question {
   uint16_t _class;
 };
 
+// All Question fields are stored in HOST byte order. Caller owns htons/ntohs
+// — call ntohs on que.type and que._class after reading the Question off the
+// wire, and htons on them before writing back out, otherwise values will be
+// wrong.
+//
+// Example:
+//   Question que{};
+//   set_que_name(que, "codecrafters.io");
+//   set_que_type(que, Slime::records::A);
+//   set_que_class(que, Slime::classes::IN);
+//   // before serializing to the wire:
+//   que.type = htons(que.type);
+//   que._class = htons(que._class);
+
 // size in bytes of the question section on the wire:
 // name (length-prefixed labels + terminating 0) + type + class
+// Example: size_t n = get_ques_size(que);
 size_t get_ques_size(const Question& ques);
 
-// parses the string for '.' and writes it in network notation
+// parses the string for '.' and writes it in network notation.
 // name: the regular string ex: codecrafters.io
+// Example: set_que_name(que, "codecrafters.io");
 void set_que_name(Question& que, const std::string& name);
+// returns the encoded name bytes (length-prefixed labels + null terminator).
+// Example: std::vector<uint8_t> n = get_que_name(que);
 std::vector<uint8_t> get_que_name(const Question& que);
 
-// DO NOT CALL HTONS ON VALUE
+// type is stored in host byte order. Caller must htons(que.type) before
+// writing the Question to the wire or it will be wrong.
+// Example: set_que_type(que, Slime::records::A);
 void set_que_type(Question& que, Slime::records value);
+// type must be in host byte order (ntohs it after reading from the wire).
+// Example: Slime::records t = get_que_type(que);
 Slime::records get_que_type(const Question& que);
 
-// DO NOT CALL HTONS ON VALUE
+// class is stored in host byte order. Caller must htons(que._class) before
+// writing the Question to the wire or it will be wrong.
+// Example: set_que_class(que, Slime::classes::IN);
 void set_que_class(Question& que, Slime::classes value);
+// class must be in host byte order (ntohs it after reading from the wire).
+// Example: Slime::classes c = get_que_class(que);
 Slime::classes get_que_class(const Question& que);
 
 };  // namespace Slime

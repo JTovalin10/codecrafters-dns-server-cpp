@@ -1,7 +1,5 @@
 #include "answer.hpp"
 
-#include <arpa/inet.h>
-
 #include <algorithm>
 
 #include "../utils/my_utils.hpp"
@@ -19,21 +17,21 @@ void set_ans_name(Slime::Answer& ans, const std::string& name) {
 }
 
 void set_ans_type(Slime::Answer& ans, Slime::records value) {
-  ans.type = htons(static_cast<uint16_t>(value));
+  ans.type = static_cast<uint16_t>(value);
 }
 
 void set_class(Slime::Answer& ans, Slime::classes value) {
-  ans._class = htons(static_cast<uint16_t>(value));
+  ans._class = static_cast<uint16_t>(value);
 }
 
-void set_ttl(Slime::Answer& ans) { ans.TTL = DEFAULT_TTL; }
-void set_ttl(Slime::Answer& ans, uint32_t value) { ans.TTL = value; }
+void set_ttl(Slime::Answer& ans) { ans.ttl = DEFAULT_TTL; }
+void set_ttl(Slime::Answer& ans, uint32_t value) { ans.ttl = value; }
 
 void decrement_ttl(Slime::Answer& ans) {
-  ans.TTL = std::max(static_cast<uint32_t>(0), ans.TTL - 1);
+  ans.ttl = std::max(static_cast<uint32_t>(0), ans.ttl - 1);
 }
 
-void set_rdlength(Slime::Answer& ans) { ans.RDLENGTH = ans.data.size(); }
+void set_rdlength(Slime::Answer& ans) { ans.rdlength = ans.data.size(); }
 
 void set_data(Slime::Answer& ans) {
   ans.data = DATA_DEFAULT;
@@ -46,6 +44,6 @@ void set_data(Slime::Answer& ans, const std::vector<uint8_t>& addr) {
 
 size_t get_ans_size(const Slime::Answer& ans) {
   return ans.name.size() + sizeof(ans.type) + sizeof(ans._class) +
-         sizeof(ans.TTL) + sizeof(ans.RDLENGTH) + ans.data.size();
+         sizeof(ans.ttl) + sizeof(ans.rdlength) + ans.data.size();
 }
 }  // namespace Slime

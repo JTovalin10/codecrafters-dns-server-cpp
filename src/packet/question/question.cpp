@@ -1,7 +1,5 @@
 #include "question.hpp"
 
-#include <arpa/inet.h>
-
 #include "../utils/my_utils.hpp"
 
 namespace Slime {
@@ -17,19 +15,19 @@ void set_que_name(Question& que, const std::string& name) {
 std::vector<uint8_t> get_que_name(const Question& que) { return que.name; }
 
 void set_que_type(Question& que, Slime::records value) {
-  que.type = htons(static_cast<uint16_t>(value));
+  que.type = static_cast<uint16_t>(value);
 }
 
 Slime::records get_que_type(const Question& que) {
-  return static_cast<Slime::records>(ntohs(que.type));
+  return static_cast<Slime::records>(que.type);
 }
 
 void set_que_class(Question& que, Slime::classes value) {
-  que._class = htons(static_cast<uint16_t>(value));
+  que._class = static_cast<uint16_t>(value);
 }
 
 Slime::classes get_que_class(const Question& que) {
-  return static_cast<Slime::classes>(ntohs(que._class));
+  return static_cast<Slime::classes>(que._class);
 }
 
 }  // namespace Slime

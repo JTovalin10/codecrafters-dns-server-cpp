@@ -42,16 +42,35 @@ int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
 
 namespace {
 
-const int PID = 1234;
-
 void complete_header(std::array<char, BUFFER_SIZE>& response, Header& header) {
   std::memcpy(&header, response.data(), sizeof(Header));
+  header.pid = ntohs(header.pid);
   header.flags = ntohs(header.flags);
-  set_pid(header, PID);
+  header.ancount = 0;
+  header.arcount = 0;
+  header.nscount = 0;
+  header.qdcount = 0;
+  // we already got the piud from the request packet
   set_qr(header, QR::RESPONSE);
+  uint8_t opcode = get_opcode(header);
+  if (opcode != 0) {
+    set_rcode(header, Slime::RCODE::NOT_IMPLEMENTED);
+  } else {
+    set_rcode(header, Slime::RCODE::NO_ERROR);
+  }
+  set_aa(header, Slime::AA::NOT_AUTHORITATIVE);
+  set_tc(header, Slime::TC::NOT_TRUNCATED);
+  // mimic RD set by the user so this is fine as is
+  set_ra(header, Slime::RA::NOT_AVAILABLE);
+  set_z(header, 0);
+  increment_qdcount(header);
   increment_ancount(header);
+  header.pid = htons(header.pid);
   header.flags = htons(header.flags);
-
+  header.ancount = htons(header.ancount);
+  header.qdcount = htons(header.qdcount);
+  header.arcount = htons(header.arcount);
+  header.nscount = htons(header.nscount);
   std::memcpy(response.data(), &header, sizeof(Header));
 }
 
@@ -60,13 +79,14 @@ void complete_question(std::array<char, BUFFER_SIZE>& response, Question& que,
   set_que_name(que, "codecrafters.io");
   set_que_class(que, Slime::classes::IN);
   set_que_type(que, Slime::records::A);
-
+  const uint16_t type_n = ntohs(que.type);
+  const uint16_t class_n = ntohs(que._class);
   char* cursor = response.data() + offset;
   std::memcpy(cursor, que.name.data(), que.name.size());
   cursor += que.name.size();
-  std::memcpy(cursor, &que.type, sizeof(que.type));
-  cursor += sizeof(que.type);
-  std::memcpy(cursor, &que._class, sizeof(que._class));
+  std::memcpy(cursor, &type_n, sizeof(type_n));
+  cursor += sizeof(type_n);
+  std::memcpy(cursor, &class_n, sizeof(class_n));
 }
 
 void complete_answer(std::array<char, BUFFER_SIZE>& response, Answer& ans,
@@ -76,17 +96,18 @@ void complete_answer(std::array<char, BUFFER_SIZE>& response, Answer& ans,
   Slime::set_class(ans, Slime::classes::IN);
   Slime::set_ttl(ans);
   Slime::set_data(ans);
-
-  const uint32_t ttl_n = htonl(ans.TTL);
-  const uint16_t rdlen_n = htons(ans.RDLENGTH);
+  const uint16_t type_n = htons(ans.type);
+  const uint16_t class_n = htons(ans._class);
+  const uint32_t ttl_n = htonl(ans.ttl);
+  const uint16_t rdlen_n = htons(ans.rdlength);
 
   char* cursor = response.data() + offset;
   std::memcpy(cursor, ans.name.data(), ans.name.size());
   cursor += ans.name.size();
-  std::memcpy(cursor, &ans.type, sizeof(ans.type));
-  cursor += sizeof(ans.type);
-  std::memcpy(cursor, &ans._class, sizeof(ans._class));
-  cursor += sizeof(ans._class);
+  std::memcpy(cursor, &type_n, sizeof(type_n));
+  cursor += sizeof(type_n);
+  std::memcpy(cursor, &class_n, sizeof(class_n));
+  cursor += sizeof(class_n);
   std::memcpy(cursor, &ttl_n, sizeof(ttl_n));
   cursor += sizeof(ttl_n);
   std::memcpy(cursor, &rdlen_n, sizeof(rdlen_n));
@@ -117,11 +138,11 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
     complete_header(response, header);
     // stage 3 is recieving the packet and then just returning the same data
     Question ques{};
-    int que_offset = get_header_size(header);
+    size_t que_offset = get_header_size(header);
     complete_question(response, ques, que_offset);
     // stage 4:
     Answer ans{};
-    int ans_offset = que_offset + get_ques_size(ques);
+    size_t ans_offset = que_offset + get_ques_size(ques);
     complete_answer(response, ans, ans_offset);
 
     // Send response
