@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include "../utils/my_utils.hpp"
-
 namespace Slime {
 
 namespace {
@@ -11,9 +9,8 @@ const uint32_t DEFAULT_TTL = 60;
 const std::vector<uint8_t> DATA_DEFAULT = {0x08, 0x08, 0x08, 0x08};
 }  // namespace
 
-void set_ans_name(Slime::Answer& ans, const std::string& name) {
-  ans.name = Slime::encode_name(name);
-  set_rdlength(ans);
+void set_ans_name(Slime::Answer& ans, std::vector<uint8_t>&& name) {
+  ans.name = std::move(name);
 }
 
 void set_ans_type(Slime::Answer& ans, Slime::records value) {

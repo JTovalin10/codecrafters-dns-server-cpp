@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "../packet/packet.hpp"
+#include "my_utils.hpp"
 
 namespace Slime {
 int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
@@ -42,7 +43,8 @@ int initalize_udp(int& udpSocket, struct sockaddr_in& clientAddress) {
 
 namespace {
 
-void complete_header(std::array<char, BUFFER_SIZE>& response, Header& header) {
+void complete_header(std::array<uint8_t, BUFFER_SIZE>& response,
+                     Header& header) {
   std::memcpy(&header, response.data(), sizeof(Header));
   header.pid = ntohs(header.pid);
   header.flags = ntohs(header.flags);
@@ -74,14 +76,14 @@ void complete_header(std::array<char, BUFFER_SIZE>& response, Header& header) {
   std::memcpy(response.data(), &header, sizeof(Header));
 }
 
-void complete_question(std::array<char, BUFFER_SIZE>& response, Question& que,
-                       int offset) {
-  set_que_name(que, "codecrafters.io");
+void complete_question(std::array<uint8_t, BUFFER_SIZE>& response,
+                       Question& que, int offset) {
+  set_que_name(que, Slime::find_name(response, offset));
   set_que_class(que, Slime::classes::IN);
   set_que_type(que, Slime::records::A);
   const uint16_t type_n = ntohs(que.type);
   const uint16_t class_n = ntohs(que._class);
-  char* cursor = response.data() + offset;
+  uint8_t* cursor = response.data() + offset;
   std::memcpy(cursor, que.name.data(), que.name.size());
   cursor += que.name.size();
   std::memcpy(cursor, &type_n, sizeof(type_n));
@@ -89,9 +91,9 @@ void complete_question(std::array<char, BUFFER_SIZE>& response, Question& que,
   std::memcpy(cursor, &class_n, sizeof(class_n));
 }
 
-void complete_answer(std::array<char, BUFFER_SIZE>& response, Answer& ans,
-                     int offset) {
-  Slime::set_ans_name(ans, "codecrafters.io");
+void complete_answer(std::array<uint8_t, BUFFER_SIZE>& response, Answer& ans,
+                     int offset, std::vector<uint8_t> name) {
+  Slime::set_ans_name(ans, std::move(name));
   Slime::set_ans_type(ans, Slime::records::A);
   Slime::set_class(ans, Slime::classes::IN);
   Slime::set_ttl(ans);
@@ -101,7 +103,7 @@ void complete_answer(std::array<char, BUFFER_SIZE>& response, Answer& ans,
   const uint32_t ttl_n = htonl(ans.ttl);
   const uint16_t rdlen_n = htons(ans.rdlength);
 
-  char* cursor = response.data() + offset;
+  uint8_t* cursor = response.data() + offset;
   std::memcpy(cursor, ans.name.data(), ans.name.size());
   cursor += ans.name.size();
   std::memcpy(cursor, &type_n, sizeof(type_n));
@@ -131,7 +133,7 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
       break;
     }
 
-    std::array<char, BUFFER_SIZE> response{};
+    std::array<uint8_t, BUFFER_SIZE> response{};
     std::memcpy(&response, buffer.data(), BUFFER_SIZE);
     // stage 2
     Header header{};
@@ -143,7 +145,7 @@ void read_from(int& udpSocket, struct sockaddr_in& clientAddress) {
     // stage 4:
     Answer ans{};
     size_t ans_offset = que_offset + get_ques_size(ques);
-    complete_answer(response, ans, ans_offset);
+    complete_answer(response, ans, ans_offset, ques.name);
 
     // Send response
     if (sendto(udpSocket, response.data(), response.size(), 0,

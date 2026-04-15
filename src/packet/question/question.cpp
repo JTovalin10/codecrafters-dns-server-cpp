@@ -1,15 +1,13 @@
 #include "question.hpp"
 
-#include "../utils/my_utils.hpp"
-
 namespace Slime {
 
 size_t get_ques_size(const Question& ques) {
   return ques.name.size() + sizeof(ques.type) + sizeof(ques._class);
 }
 
-void set_que_name(Question& que, const std::string& name) {
-  que.name = Slime::encode_name(name);
+void set_que_name(Question& que, std::vector<uint8_t>&& name) {
+  que.name = std::move(name);
 }
 
 std::vector<uint8_t> get_que_name(const Question& que) { return que.name; }

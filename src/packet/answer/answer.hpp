@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "../utils/shared_enums.hpp"
+#include "../shared_enums.hpp"
 
 namespace Slime {
 
@@ -57,7 +57,7 @@ struct Answer {
 //
 // Example:
 //   Answer ans{};
-//   set_ans_name(ans, "codecrafters.io");
+//   set_ans_name(ans, encode_name("codecrafters.io"));
 //   set_ans_type(ans, Slime::records::A);
 //   set_class(ans, Slime::classes::IN);
 //   set_ttl(ans, 60);
@@ -68,10 +68,10 @@ struct Answer {
 //   ans.ttl = htonl(ans.ttl);
 //   ans.rdlength = htons(ans.rdlength);
 
-// parses the string for '.' and writes it in network notation. Also calls
-// set_rdlength for you. name: the regular string ex: codecrafters.io
-// Example: set_ans_name(ans, "codecrafters.io");
-void set_ans_name(Slime::Answer& ans, const std::string& name);
+// takes already-encoded name bytes (length-prefixed labels + null terminator)
+// and moves them into ans.name.
+// Example: set_ans_name(ans, encode_name("codecrafters.io"));
+void set_ans_name(Slime::Answer& ans, std::vector<uint8_t>&& name);
 
 // type is stored in host byte order. Caller must htons(ans.type) before
 // writing to the wire or it will be wrong.
