@@ -16,7 +16,7 @@ std::vector<uint8_t> encode_name(const std::string& name);
 
 // returns an array of bytes that contains the network notation name from a
 // array of bytes
-std::vector<uint8_t> find_name(std::array<uint8_t, BUFFER_SIZE> arr,
-                               int offset);
+std::pair<std::vector<uint8_t>, size_t> find_network_format_name(
+    std::array<uint8_t, BUFFER_SIZE> arr, size_t offset);
 
 }  // namespace Slime
