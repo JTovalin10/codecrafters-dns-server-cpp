@@ -1,13 +1,12 @@
 #include "my_utils.hpp"
 
-#include <algorithm>
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
 
 namespace Slime {
 
-std::vector<uint8_t> encode_name(const std::string& name) {
+std::vector<uint8_t> encode_name(const std::string &name) {
   std::vector<uint8_t> res;
   res.reserve(name.size() + 2);
   // add a temp for the size variable
@@ -24,7 +23,7 @@ std::vector<uint8_t> encode_name(const std::string& name) {
   }
   // fill in the last one
   res[len_pos] = res.size() - len_pos - 1;
-  res.push_back('\0');  // 0x00
+  res.push_back('\0'); // 0x00
   res.shrink_to_fit();
   return res;
 }
@@ -32,8 +31,8 @@ std::vector<uint8_t> encode_name(const std::string& name) {
 const uint8_t IS_POINTER = 0xC0;
 const uint8_t GET_SIZE = 0x3f;
 const uint8_t ADD_BYTE = 8;
-std::pair<std::vector<uint8_t>, size_t> find_network_format_name(
-    std::array<uint8_t, BUFFER_SIZE> arr, size_t offset) {
+std::pair<std::vector<uint8_t>, size_t>
+find_network_format_name(std::array<uint8_t, BUFFER_SIZE> arr, size_t offset) {
   std::vector<uint8_t> res{};
   res.reserve(BUFFER_SIZE);
   std::unordered_set<size_t> visited{};
@@ -55,7 +54,7 @@ std::pair<std::vector<uint8_t>, size_t> find_network_format_name(
         throw std::runtime_error("Infinite loop");
       }
       if (!followed_pointer) {
-        wire_bytes = offset - soffset + 2;  // +2 for 2-byte pointer
+        wire_bytes = offset - soffset + 2; // +2 for 2-byte pointer
         followed_pointer = true;
       }
       visited.insert(offset);
@@ -75,4 +74,4 @@ std::pair<std::vector<uint8_t>, size_t> find_network_format_name(
   return {res, wire_bytes};
 }
 
-}  // namespace Slime
+} // namespace Slime

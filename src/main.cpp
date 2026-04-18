@@ -2,8 +2,9 @@
 #include <iostream>
 
 #include "network/network.hpp"
+#include "network/shared_vars.hpp"
 
-auto main() -> int {
+int main(int argc, char **argv) {
   // Flush after every std::cout / std::cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
@@ -17,10 +18,20 @@ auto main() -> int {
   // when running tests.
   std::cout << "Logs from your program will appear here!" << '\n';
 
+  if (argc != 0 || argc != 2) {
+    std::cerr << "./your_server [--resolver] [ip:port]";
+    return EXIT_FAILURE;
+  }
   int udpSocket;
   struct sockaddr_in clientAddress;
-  if (Slime::initalize_udp(udpSocket, clientAddress) == EXIT_FAILURE) {
-    return 1;
+  if (argc == 0) {
+    if (Slime::iudp(udpSocket, clientAddress) < 0) {
+      return 1;
+    }
+  } else {
+    if (Slime::irudp(udpSocket, clientAddress, argv[1]) < 0) {
+      return 1;
+    }
   }
 
   Slime::read_from(udpSocket, clientAddress);
