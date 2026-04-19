@@ -125,103 +125,107 @@ enum class RCODE : uint8_t {
 // pid is stored in host byte order. Caller must htons(header.pid) before
 // writing to the wire or it will be wrong.
 // Example: set_pid(header, 1234);
-void set_pid(Header& header, uint16_t value);
+void set_pid(Header &header, uint16_t value);
 // pid must be in host byte order (ntohs it after reading from the wire).
 // Example: uint16_t id = get_pid(header);
-uint16_t get_pid(const Header& header);
+uint16_t get_pid(const Header &header);
 
 // size in bytes of the header section on the wire (always 12). No byte-order
 // concern. Example: int offset = get_header_size(header);
-std::size_t get_header_size(const Header& header);
+std::size_t get_header_size(const Header &header);
 
 // count must be in host byte order (ntohs it after reading from the wire).
 // Example: uint16_t n = get_qdcount(header);
-uint16_t get_qdcount(const Header& header);
+uint16_t get_qdcount(const Header &header);
 // count must be in host byte order (ntohs it after reading from the wire).
 // Example: uint16_t n = get_ancount(header);
-uint16_t get_ancount(const Header& header);
+uint16_t get_ancount(const Header &header);
 // count must be in host byte order (ntohs it after reading from the wire).
 // Example: uint16_t n = get_nscount(header);
-uint16_t get_nscount(const Header& header);
+uint16_t get_nscount(const Header &header);
 // count must be in host byte order (ntohs it after reading from the wire).
 // Example: uint16_t n = get_arcount(header);
-uint16_t get_arcount(const Header& header);
+uint16_t get_arcount(const Header &header);
 
 // count must be in host byte order. Caller must htons(header.qdcount) before
 // writing to the wire or it will be wrong.
 // Example: increment_qdcount(header);
-void increment_qdcount(Header& header);
+void increment_qdcount(Header &header);
+/**
+ * sets the qdcount to what was given. Caller must call htons(header.qdcount)
+ */
+void set_qdcount(Header &header, uint16_t val);
 // count must be in host byte order. Caller must htons(header.ancount) before
 // writing to the wire or it will be wrong.
 // Example: increment_ancount(header);
-void increment_ancount(Header& header);
+void increment_ancount(Header &header);
 // count must be in host byte order. Caller must htons(header.nscount) before
 // writing to the wire or it will be wrong.
 // Example: increment_nscount(header);
-void increment_nscount(Header& header);
+void increment_nscount(Header &header);
 // count must be in host byte order. Caller must htons(header.arcount) before
 // writing to the wire or it will be wrong.
 // Example: increment_arcount(header);
-void increment_arcount(Header& header);
+void increment_arcount(Header &header);
 
 // All flag getters and setters below operate on header.flags in HOST byte
 // order — same rule as the full-header example above.
 
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint16_t bit = get_flags_bit(header, 15);
-uint16_t get_flags_bit(const Header& header, uint16_t index);
+uint16_t get_flags_bit(const Header &header, uint16_t index);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_flags_bit(header, 1, 15);
-void set_flags_bit(Header& header, uint16_t value, uint16_t index);
+void set_flags_bit(Header &header, uint16_t value, uint16_t index);
 
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t qr = get_qr(header);
-uint8_t get_qr(const Header& header);
+uint8_t get_qr(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t op = get_opcode(header);
-uint8_t get_opcode(const Header& header);
+uint8_t get_opcode(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t aa = get_aa(header);
-uint8_t get_aa(const Header& header);
+uint8_t get_aa(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t tc = get_tc(header);
-uint8_t get_tc(const Header& header);
+uint8_t get_tc(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t rd = get_rd(header);
-uint8_t get_rd(const Header& header);
+uint8_t get_rd(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t ra = get_ra(header);
-uint8_t get_ra(const Header& header);
+uint8_t get_ra(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t z = get_z(header);
-uint8_t get_z(const Header& header);
+uint8_t get_z(const Header &header);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: uint8_t rc = get_rcode(header);
-uint8_t get_rcode(const Header& header);
+uint8_t get_rcode(const Header &header);
 
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_qr(header, QR::RESPONSE);
-void set_qr(Header& header, QR value);
+void set_qr(Header &header, QR value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_aa(header, AA::AUTHORITATIVE);
-void set_aa(Header& header, AA value);
+void set_aa(Header &header, AA value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_tc(header, TC::NOT_TRUNCATED);
-void set_tc(Header& header, TC value);
+void set_tc(Header &header, TC value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_rd(header, RD::DESIRED);
-void set_rd(Header& header, RD value);
+void set_rd(Header &header, RD value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_ra(header, RA::AVAILABLE);
-void set_ra(Header& header, RA value);
+void set_ra(Header &header, RA value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_z(header, 0);  // value must be 0-7 (3 bits)
-void set_z(Header& header, uint16_t value);
+void set_z(Header &header, uint16_t value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_rcode(header, RCODE::NO_ERROR);
-void set_rcode(Header& header, RCODE value);
+void set_rcode(Header &header, RCODE value);
 // flags must be in host byte order. Caller owns ntohs/htons around this call.
 // Example: set_opcode(header, OPCODE::QUERY);
-void set_opcode(Header& header, OPCODE value);
+void set_opcode(Header &header, OPCODE value);
 
-};  // namespace Slime
+}; // namespace Slime
