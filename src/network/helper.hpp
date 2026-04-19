@@ -4,6 +4,7 @@
 #include "shared_vars.hpp"
 #include <array>
 #include <cstdint>
+#include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <vector>
