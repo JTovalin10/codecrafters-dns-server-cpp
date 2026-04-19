@@ -2,40 +2,39 @@
 #include <iostream>
 
 #include "network/network.hpp"
-#include "network/shared_vars.hpp"
 
-int main(int argc, char **argv) {
-  // Flush after every std::cout / std::cerr
+int main(int argc, char** argv) {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  // Disable output buffering
   if (setvbuf(stdout, nullptr, _IONBF, BUFFER_SIZE) < 0) {
     std::cerr << "Disabling output buffer failed" << '\n';
     return 1;
   }
-  // You can use print statements as follows for debugging, they'll be visible
-  // when running tests.
+
   std::cout << "Logs from your program will appear here!" << '\n';
-
-  if (argc != 0 || argc != 2) {
-    std::cerr << "./your_server [--resolver] [ip:port]";
-    return EXIT_FAILURE;
-  }
-  int udpSocket;
-  struct sockaddr_in clientAddress;
-  if (argc == 0) {
-    if (Slime::iudp(udpSocket, clientAddress) < 0) {
-      return 1;
-    }
-  } else {
-    if (Slime::irudp(udpSocket, clientAddress, argv[1]) < 0) {
-      return 1;
-    }
+  // quick check to ensure usage
+  // create server socket
+  int sSocket;
+  struct sockaddr_in clientAddress{};
+  if (Slime::create_ssocket(sSocket, clientAddress) < 0) {
+    std::cerr << "Error creating socket\n";
+    return 1;
   }
 
-  Slime::read_from(udpSocket, clientAddress);
-  // upon recvfrom returning -1 we close the exit
-  close(udpSocket);
+  // if argc == 1 then we are not forwading
+  if (argc == 1) {
+    Slime::non_forward_server(sSocket, clientAddress);
+  } else if (argc == 3) {
+    // if argc == 3 then we are forwarding
+    int fSocket;
+    struct sockaddr_in resolverAddr{};
+    if (Slime::create_fsocket(fSocket, resolverAddr, argv[2]) < 0) {
+      return 1;
+    }
+    Slime::forward_server(sSocket, clientAddress, fSocket, resolverAddr);
+    close(fSocket);
+  }
+  close(sSocket);
   return 0;
 }
