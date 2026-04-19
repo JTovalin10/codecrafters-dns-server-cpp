@@ -1,11 +1,11 @@
 #include "helper.hpp"
 
-#include <iostream>
 #include <netinet/in.h>
 
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
@@ -16,7 +16,7 @@ namespace Slime {
 
 // ─── Name encoding ───────────────────────────────────────────────────────────
 
-std::vector<uint8_t> encode_name(const std::string &name) {
+std::vector<uint8_t> encode_name(const std::string& name) {
   std::vector<uint8_t> res;
   res.reserve(name.size() + 2);
   size_t len_pos = 0;
@@ -40,8 +40,8 @@ const uint8_t IS_POINTER = 0xC0;
 const uint8_t GET_SIZE = 0x3f;
 const uint8_t ADD_BYTE = 8;
 
-std::pair<std::vector<uint8_t>, size_t>
-find_network_format_name(std::array<uint8_t, BUFFER_SIZE> arr, size_t offset) {
+std::pair<std::vector<uint8_t>, size_t> find_network_format_name(
+    std::array<uint8_t, BUFFER_SIZE> arr, size_t offset) {
   std::vector<uint8_t> res{};
   res.reserve(BUFFER_SIZE);
   std::unordered_set<size_t> visited{};
@@ -84,7 +84,7 @@ find_network_format_name(std::array<uint8_t, BUFFER_SIZE> arr, size_t offset) {
 
 // ─── Header helpers ──────────────────────────────────────────────────────────
 
-void set_header_to_host(Header &header) {
+void set_header_to_host(Header& header) {
   header.pid = ntohs(header.pid);
   header.flags = ntohs(header.flags);
   header.qdcount = ntohs(header.qdcount);
@@ -93,7 +93,7 @@ void set_header_to_host(Header &header) {
   header.nscount = 0;
 }
 
-void set_header_to_network(Header &header) {
+void set_header_to_network(Header& header) {
   header.pid = htons(header.pid);
   header.flags = htons(header.flags);
   header.qdcount = htons(header.qdcount);
@@ -102,7 +102,7 @@ void set_header_to_network(Header &header) {
   header.nscount = htons(header.nscount);
 }
 
-void populate_header(Header &header) {
+void populate_header(Header& header) {
   set_qr(header, QR::RESPONSE);
   uint8_t opcode = get_opcode(header);
   if (opcode != 0) {
@@ -116,8 +116,8 @@ void populate_header(Header &header) {
   set_z(header, 0);
 }
 
-uint16_t complete_header(std::array<uint8_t, BUFFER_SIZE> &buffer,
-                         Header &header) {
+uint16_t complete_header(std::array<uint8_t, BUFFER_SIZE>& buffer,
+                         Header& header) {
   std::memcpy(&header, buffer.data(), sizeof(header));
   set_header_to_host(header);
   populate_header(header);
@@ -128,8 +128,8 @@ uint16_t complete_header(std::array<uint8_t, BUFFER_SIZE> &buffer,
 
 // ─── Question helpers ────────────────────────────────────────────────────────
 
-size_t populate_questions(const std::array<uint8_t, BUFFER_SIZE> &buffer,
-                          Question &que, size_t offset) {
+size_t populate_questions(const std::array<uint8_t, BUFFER_SIZE>& buffer,
+                          Question& que, size_t offset) {
   auto [name, moved] = find_network_format_name(buffer, offset);
   set_que_name(que, std::move(name));
   set_que_class(que, classes::IN);
@@ -137,11 +137,11 @@ size_t populate_questions(const std::array<uint8_t, BUFFER_SIZE> &buffer,
   return moved + sizeof(que._class) + sizeof(que.type);
 }
 
-void write_question_to_buffer(std::array<uint8_t, BUFFER_SIZE> &buffer,
-                              Question &que, size_t offset) {
+void write_question_to_buffer(std::array<uint8_t, BUFFER_SIZE>& buffer,
+                              Question& que, size_t offset) {
   const uint16_t type_n = htons(que.type);
   const uint16_t class_n = htons(que._class);
-  uint8_t *cursor = buffer.data() + offset;
+  uint8_t* cursor = buffer.data() + offset;
   std::memcpy(cursor, que.name.data(), que.name.size());
   cursor += que.name.size();
   std::memcpy(cursor, &type_n, sizeof(type_n));
@@ -149,9 +149,9 @@ void write_question_to_buffer(std::array<uint8_t, BUFFER_SIZE> &buffer,
   std::memcpy(cursor, &class_n, sizeof(class_n));
 }
 
-void find_all_questions(std::vector<Question> &questions,
-                        const std::array<uint8_t, BUFFER_SIZE> &request,
-                        size_t num_questions, size_t &read_offset) {
+void find_all_questions(std::vector<Question>& questions,
+                        const std::array<uint8_t, BUFFER_SIZE>& request,
+                        size_t num_questions, size_t& read_offset) {
   for (size_t i = 0; i < num_questions; i++) {
     Question que;
     read_offset += populate_questions(request, que, read_offset);
@@ -161,7 +161,7 @@ void find_all_questions(std::vector<Question> &questions,
 
 // ─── Answer helpers ──────────────────────────────────────────────────────────
 
-void populate_answer(Answer &ans, std::vector<uint8_t> &&name) {
+void populate_answer(Answer& ans, std::vector<uint8_t>&& name) {
   set_ans_name(ans, std::move(name));
   set_ans_type(ans, records::A);
   set_class(ans, classes::IN);
@@ -169,8 +169,8 @@ void populate_answer(Answer &ans, std::vector<uint8_t> &&name) {
   set_data(ans);
 }
 
-void copy_answer(Answer &ans, std::vector<uint8_t> &&name, size_t pos,
-                 std::array<uint8_t, BUFFER_SIZE> &buf) {
+void copy_answer(Answer& ans, std::vector<uint8_t>&& name, size_t pos,
+                 std::array<uint8_t, BUFFER_SIZE>& buf) {
   ans.name = std::move(name);
   uint16_t type_n, class_n, rdlen_n;
   uint32_t ttl_n;
@@ -190,14 +190,14 @@ void copy_answer(Answer &ans, std::vector<uint8_t> &&name, size_t pos,
   ans.data.assign(buf.data() + pos, buf.data() + pos + ans.rdlength);
 }
 
-void write_answer_to_buffer(std::array<uint8_t, BUFFER_SIZE> &buffer,
-                            Answer &ans, size_t offset) {
+void write_answer_to_buffer(std::array<uint8_t, BUFFER_SIZE>& buffer,
+                            Answer& ans, size_t offset) {
   const uint16_t type_n = htons(ans.type);
   const uint16_t class_n = htons(ans._class);
   const uint32_t ttl_n = htonl(ans.ttl);
   const uint16_t rdlen_n = htons(ans.rdlength);
 
-  uint8_t *cursor = buffer.data() + offset;
+  uint8_t* cursor = buffer.data() + offset;
   std::memcpy(cursor, ans.name.data(), ans.name.size());
   cursor += ans.name.size();
   std::memcpy(cursor, &type_n, sizeof(type_n));
@@ -211,7 +211,7 @@ void write_answer_to_buffer(std::array<uint8_t, BUFFER_SIZE> &buffer,
   std::memcpy(cursor, ans.data.data(), ans.data.size());
 }
 
-void complete_answer(std::array<uint8_t, BUFFER_SIZE> &buffer, Answer &ans,
+void complete_answer(std::array<uint8_t, BUFFER_SIZE>& buffer, Answer& ans,
                      size_t offset, std::vector<uint8_t> name) {
   populate_answer(ans, std::move(name));
   write_answer_to_buffer(buffer, ans, offset);
@@ -219,22 +219,22 @@ void complete_answer(std::array<uint8_t, BUFFER_SIZE> &buffer, Answer &ans,
 
 // ─── Response helpers ────────────────────────────────────────────────────────
 
-void populate_response(std::array<uint8_t, BUFFER_SIZE> &response,
-                       size_t &write_offset, std::vector<Question> &questions) {
-  for (Question &que : questions) {
+void populate_response(std::array<uint8_t, BUFFER_SIZE>& response,
+                       size_t& write_offset, std::vector<Question>& questions) {
+  for (Question& que : questions) {
     write_question_to_buffer(response, que, write_offset);
     write_offset += get_ques_size(que);
   }
-  for (Question &que : questions) {
+  for (Question& que : questions) {
     Answer ans;
     complete_answer(response, ans, write_offset, que.name);
     write_offset += get_ans_size(ans);
   }
 }
 
-int execf(const std::array<uint8_t, BUFFER_SIZE> &request,
-          std::array<uint8_t, BUFFER_SIZE> &response, size_t &write_offset,
-          int &fSocket, struct sockaddr_in &fAddr, socklen_t fAddrLen) {
+int execf(const std::array<uint8_t, BUFFER_SIZE>& request,
+          std::array<uint8_t, BUFFER_SIZE>& response, size_t& write_offset,
+          int& fSocket, struct sockaddr_in& fAddr, socklen_t fAddrLen) {
   Header header{};
   uint16_t num_questions = complete_header(response, header);
   size_t read_offset = HEADER_SIZE;
@@ -250,20 +250,20 @@ int execf(const std::array<uint8_t, BUFFER_SIZE> &request,
   fwd_header.qdcount = ntohs(fwd_header.qdcount);
   set_qdcount(fwd_header, 1);
   fwd_header.qdcount = htons(fwd_header.qdcount);
-  for (Question &que : questions) {
+  for (Question& que : questions) {
     std::array<uint8_t, BUFFER_SIZE> fwd{};
     std::memcpy(fwd.data(), &fwd_header, HEADER_SIZE);
     write_question_to_buffer(fwd, que, HEADER_SIZE);
 
     if (sendto(fSocket, fwd.data(), fwd.size(), 0,
-               reinterpret_cast<struct sockaddr *>(&fAddr), fAddrLen) < 0) {
+               reinterpret_cast<struct sockaddr*>(&fAddr), fAddrLen) < 0) {
       std::cerr << "Failed to send data\n";
       return -1;
     }
 
     std::array<uint8_t, BUFFER_SIZE> res{};
     if (recvfrom(fSocket, res.data(), res.size(), 0,
-                 reinterpret_cast<struct sockaddr *>(&fAddr), &fAddrLen) < 0) {
+                 reinterpret_cast<struct sockaddr*>(&fAddr), &fAddrLen) < 0) {
       std::cerr << "Failed to receive data\n";
       return -1;
     }
@@ -281,15 +281,15 @@ int execf(const std::array<uint8_t, BUFFER_SIZE> &request,
   }
 
   // now we want to write the answers to them
-  for (Answer &ans : answers) {
+  for (Answer& ans : answers) {
     write_answer_to_buffer(response, ans, write_offset);
     write_offset += get_ans_size(ans);
   }
   return 0;
 }
 
-void execnf(const std::array<uint8_t, BUFFER_SIZE> &request,
-            std::array<uint8_t, BUFFER_SIZE> &response, size_t &write_offset) {
+void execnf(const std::array<uint8_t, BUFFER_SIZE>& request,
+            std::array<uint8_t, BUFFER_SIZE>& response, size_t& write_offset) {
   Header header{};
   uint16_t num_questions = complete_header(response, header);
   size_t read_offset = HEADER_SIZE;
@@ -299,4 +299,4 @@ void execnf(const std::array<uint8_t, BUFFER_SIZE> &request,
   populate_response(response, write_offset, questions);
 }
 
-} // namespace Slime
+}  // namespace Slime
